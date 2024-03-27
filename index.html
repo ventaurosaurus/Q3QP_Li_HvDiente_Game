@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>generic fighting game simulator</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+      <h1>generic fighting game</h1>
+      <div id="health-status">
+        <p>Player Health: <span id="player-health">100</span></p>
+        <p>Opponent Health: <span id="opponent-health">100</span></p>
+      </div>
+      <div id="toss-coin">
+        <label for="coin-select">Choose: </label>
+        <select id="coin-select">
+          <option value="head">Head</option>
+          <option value="tail">Tail</option>
+        </select>
+        <button onclick="tossCoin()">Toss Coin</button>
+      </div>
+      <div id="actions">
+        <button id="attack-btn" onclick="playerAttack()" disabled>Attack</button>
+        <button id="defend-btn" onclick="playerDefend()" disabled>Defend</button>
+      </div>
+      <div id="reset-container">
+        <button id="reset-btn" onclick="resetBtn()" disabled>Reset</button>
+      </div>
+      <div id="output"></div>
+    </div>
+
+<script>
+  let playerHealth = 100;
+  let opponentHealth = 100;
+
+  function tossCoin() {
+    const coinSelect = document.getElementById('coin-select');
+    const result = Math.random() < 0.5 ? 'head' : 'tail';
+    const playerChoice = coinSelect.value;
+    const attackBtn = document.getElementById('attack-btn');
+    const defendBtn = document.getElementById('defend-btn');
+
+    if (playerChoice === result) {
+      document.getElementById('output').innerHTML = `Coin is ${result}. You chose ${playerChoice}!<br>Player attacks first.`;
+      attackBtn.disabled = false;
+      defendBtn.disabled = true;
+    } else {
+      document.getElementById('output').innerHTML = `Coin is ${result}. You chose ${playerChoice}!<br>Opponent attacks first.`;
+      attackBtn.disabled = false;
+      defendBtn.disabled = false;
+      opponentTurn();
+    }
+  }
+
+  function opponentTurn() {
+    const action = opponentAction();
+    if (action === 'attack') {
+      const damage = calculateDamage();
+      playerHealth -= damage;
+      if (playerHealth < 0) playerHealth = 0;
+      document.getElementById('player-health').textContent = playerHealth;
+      document.getElementById('output').innerHTML += `<br>Opponent attacks and inflicts ${damage} damage.`;
+      checkHealth();
+    } else {
+      document.getElementById('output').innerHTML += `<br>Opponent defends.`;
+    }
+  }
+
+  function calculateDamage() {
+    return Math.floor(Math.random() * 5) + 1;
+  }
+
+  function opponentAction() {
+    return Math.random() < 0.5 ? 'attack' : 'defend';
+  }
+
+  function playerAttack() {
+    const damage = calculateDamage();
+    opponentHealth -= damage;
+    if (opponentHealth < 0) opponentHealth = 0;
+    document.getElementById('opponent-health').textContent = opponentHealth;
+    document.getElementById('output').innerHTML += `<br>You attack and inflict ${damage} damage.`;
+    checkHealth();
+    opponentTurn();
+  }
+
+  function playerDefend() {
+    const damage = calculateDamage();
+    playerHealth -= Math.min(damage, 3);
+    if (playerHealth < 0) playerHealth = 0;
+    document.getElementById('player-health').textContent = playerHealth;
+    document.getElementById('output').innerHTML += `<br>You defend and block ${Math.min(damage, 3)} damage.`;
+    checkHealth();
+    opponentTurn();
+  }
+
+  function checkHealth() {
+    if (playerHealth <= 0) {
+      document.getElementById('output').innerHTML += "<br>Opponent wins.";
+      disableButtons();
+    } else if (opponentHealth <= 0) {
+      document.getElementById('output').innerHTML += "<br>Player wins.";
+      disableButtons();
+    }
+  }
+
+  function resetBtn() {
+    playerHealth = 100;
+    opponentHealth = 100;
+    document.getElementById('player-health').textContent = playerHealth;
+    document.getElementById('opponent-health').textContent = opponentHealth;
+    document.getElementById('output').innerHTML = "";
+    disableButtons();
+  }
+
+  function disableButtons() {
+    const attackBtn = document.getElementById('attack-btn');
+    const defendBtn = document.getElementById('defend-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    attackBtn.disabled = true;
+    defendBtn.disabled = true;
+    resetBtn.disabled = false;
+  }
+</script>
+</body>
+</html>
